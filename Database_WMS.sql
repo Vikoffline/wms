@@ -2,10 +2,6 @@ drop database if exists WMS;
 create database if not exists WMS;
 use WMS;
 
--- -------------------------------------------------------------------------------------------
--- -------------------------------------------------------------------------------------------
--- -------------------------------------------------------------------------------------------
-
 
 
 create table Instances (
@@ -77,6 +73,8 @@ create table Roles_Perms (
 create table Managers(
 	IdNum int auto_increment Unique Key,
 	Id varchar(16) primary key default("Mn_"),
+    Login VARCHAR(16) unique,
+    Password VARCHAR(64),
     Name varchar(32),
     ContactNumber varchar(12),
     Email varchar(100),
@@ -100,7 +98,7 @@ create table Actions (
 create table Sessions (
 	IdNum int auto_increment Unique Key,
 	Id varchar(16) primary key default("Sn_"),
-    secret_key text,
+    Token char(64) unique,
     managerId varchar(16),
     foreign key (managerId) references Managers(Id) on delete set null
 );
@@ -113,9 +111,6 @@ create table Logging (
     errText text
 );
 
--- -------------------------------------------------------------------------------------------
--- -----Триггеры------------------------------------------------------------------------------
--- -------------------------------------------------------------------------------------------
 
 delimiter //
 
@@ -205,6 +200,12 @@ end//
 
 delimiter ;
 
-drop user if exists Manager;
-create user Manager identified by "DevPassword";
-grant all on wms.* to Manager;
+insert into Permissions(Code, Name, tableName) values
+(0, "AllRights", "AllTables");
+
+insert into Roles(Name) values ("root");
+insert into Roles(Name) values ("empty");
+
+insert into Roles_Perms(roleId, permId) values ("Rl_1", "Pr_1");
+
+insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values ("root", "$2a$10$7z2Qu0bttRd2T3ea0Fzluu1Lp8iyU2sStJByuhYBQhE3hKENWe2Tm", "", "", "", "Rl_1");

@@ -141,6 +141,8 @@ var RPDelete, _ = con.Prepare("delete from Roles_Perms where Id = ?;")
 type Managers struct {
 	IdNum         int64
 	Id            string
+	Login         string
+	Password      string
 	Name          string
 	ContactNumber string
 	Email         string
@@ -148,8 +150,9 @@ type Managers struct {
 }
 
 var MnGet, _ = con.Prepare("select * from Managers where IdNum = ?")
-var MnCreate, _ = con.Prepare("insert into Managers(Name, ContactNumber, Email, roleId) values (?, ?, ?, ?);")
-var MnUpdate, _ = con.Prepare("update Managers set Name = ?, ContactNumber = ?, Email = ?, roleId = ? where Id = ?;")
+var MnFind, _ = con.Prepare("select * from Managers where Login = ?")
+var MnCreate, _ = con.Prepare("insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values (?, ?, ?, ?);")
+var MnUpdate, _ = con.Prepare("update Managers set Login = ?, Password = ?, Name = ?, ContactNumber = ?, Email = ?, roleId = ? where Id = ?;")
 var MnDelete, _ = con.Prepare("delete from Managers where Id = ?;")
 
 //-----------------------------------------------------------------------------------------------------
@@ -176,16 +179,16 @@ var AcUpdate, _ = con.Prepare("update Actions set Type = ?, Date = ?, itemId = ?
 //-----------------------------------------------------------------------------------------------------
 
 type Sessions struct {
-	IdNum      int64
-	Id         string
-	secret_key string
-	managerId  string
+	IdNum     int64
+	Id        string
+	Token     string
+	managerId string
 }
 
-var SnGet, _ = con.Prepare("select * from Sessions where IdNum = ?")
-var SnCreate, _ = con.Prepare("insert into Sessions(secret_key, managerId) values (?, ?);")
-var SnUpdate, _ = con.Prepare("update Sessions set secret_key = ?, managerId = ? where Id = ?;")
-var SnDelete, _ = con.Prepare("delete from Sessions where Id = ?;")
+var SnGet, _ = con.Prepare("select * from Sessions where Token = ?")
+var SnCreate, _ = con.Prepare("insert into Sessions(Token, managerId) values (?, ?);")
+var SnUpdate, _ = con.Prepare("update Sessions set managerId = ? where Token = ?;")
+var SnDelete, _ = con.Prepare("delete from Sessions where Token = ?;")
 
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------

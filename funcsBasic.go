@@ -36,6 +36,9 @@ func (In *Instances) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -75,8 +78,12 @@ func (In *Instances) Delete() error {
 	res, finErr := InDelete.Exec(In.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
@@ -97,8 +104,12 @@ func (In *Instances) Update() error {
 	res, finErr := InUpdate.Exec(In.Type, In.Coordinates, In.Capacity, In.IsAvailable, In.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("InstancesUpdate", finErr)
@@ -121,6 +132,9 @@ func (iI *instancesInfo) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -146,8 +160,12 @@ func (In *Instances) UpdateInfo(iI *instancesInfo) (*instancesInfo, error) {
 	res, finErr := iIUpdate.Exec(iI.ContactNumber, iI.Email, iI.WorkingHours, iI.Length, iI.Width, iI.Height, iI.Volume, iI.City, iI.Adress, In.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("InstancesUpdateInfo", finErr)
@@ -165,9 +183,9 @@ func (In *Instances) UpdateInfo(iI *instancesInfo) (*instancesInfo, error) {
 func (In *Instances) GetParts() ([]*instanceParts, error) {
 	res, finErr := InGetParts.Query(In.Id)
 
-	iP := NewInstancePart()
 	parts := []*instanceParts{}
 	for res.Next() {
+		iP := NewInstancePart()
 		err := res.Scan(&iP.IdNum, &iP.Id, &iP.Type, &iP.itemMaxSize, &iP.Capacity, &iP.instanceId)
 		if err != nil {
 			if finErr == nil {
@@ -215,6 +233,9 @@ func (iP *instanceParts) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -234,8 +255,12 @@ func (iP *instanceParts) Delete() error {
 	res, finErr := iPDelete.Exec(iP.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
@@ -253,11 +278,14 @@ func (iP *instanceParts) Update() error {
 		return finErr
 	}
 
-	res, finErr := InUpdate.Exec(iP.Type, iP.itemMaxSize, iP.Capacity, iP.instanceId, iP.Id)
-
+	res, finErr := iPUpdate.Exec(iP.Type, iP.itemMaxSize, iP.Capacity, iP.instanceId, iP.Id)
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("instancePartsUpdate", finErr)
@@ -282,6 +310,9 @@ func (It *Items) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -321,8 +352,12 @@ func (It *Items) Delete() error {
 	res, finErr := ItDelete.Exec(It.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
@@ -340,11 +375,15 @@ func (It *Items) Update() error {
 		return finErr
 	}
 
-	res, finErr := ItUpdate.Exec(It.Size, It.vendorId, It.Name)
+	res, finErr := ItUpdate.Exec(It.Size, It.vendorId, It.Name, It.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("ItemsUpdate", finErr)
@@ -369,6 +408,9 @@ func (Pr *Permissions) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -398,6 +440,7 @@ func (Pr *Permissions) Create() error {
 
 	if finErr == nil {
 		Pr.IdNum, _ = res.LastInsertId()
+
 		finErr = Pr.Get(Pr.IdNum)
 	}
 
@@ -408,8 +451,12 @@ func (Pr *Permissions) Delete() error {
 	res, finErr := PrDelete.Exec(Pr.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
@@ -427,11 +474,15 @@ func (Pr *Permissions) Update() error {
 		return finErr
 	}
 
-	res, finErr := PrUpdate.Exec(Pr.Code, Pr.Name, Pr.tableName)
+	res, finErr := PrUpdate.Exec(Pr.Code, Pr.Name, Pr.tableName, Pr.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("PermissionsUpdate", finErr)
@@ -456,6 +507,9 @@ func (Rl *Roles) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -495,8 +549,12 @@ func (Rl *Roles) Delete() error {
 	res, finErr := RlDelete.Exec(Rl.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
@@ -514,11 +572,15 @@ func (Rl *Roles) Update() error {
 		return finErr
 	}
 
-	res, finErr := RlUpdate.Exec(Rl.Name)
+	res, finErr := RlUpdate.Exec(Rl.Name, Rl.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("RolesUpdate", finErr)
@@ -580,7 +642,7 @@ func (Rl *Roles) DelPerms(permIds []string) ([]*Permissions, error) {
 		res, err := RlDelPerm.Exec(Rl.Id, PrId)
 		if err == nil {
 			if res == nil {
-				finErr = errors.New("there are no affected rows")
+				finErr = errors.New("CError: There are no affected rows")
 				break
 			}
 		} else {
@@ -611,6 +673,9 @@ func (Mn *Managers) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -620,9 +685,18 @@ func (Mn *Managers) CheckData() (bool, error) {
 func (Mn *Managers) Get(IdNum int64) error {
 	res := MnGet.QueryRow(Mn.IdNum)
 
-	finErr := res.Scan(&Mn.IdNum, &Mn.Id, &Mn.Name, &Mn.ContactNumber, &Mn.Email, &Mn.roleId)
+	finErr := res.Scan(&Mn.IdNum, &Mn.Id, &Mn.Login, &Mn.Password, &Mn.Name, &Mn.ContactNumber, &Mn.Email, &Mn.roleId)
 
 	Log("ManagersGet", finErr)
+	return finErr
+}
+
+func (Mn *Managers) Find(Login string) error {
+	res := MnFind.QueryRow(Login)
+
+	finErr := res.Scan(&Mn.IdNum, &Mn.Id, &Mn.Login, &Mn.Password, &Mn.Name, &Mn.ContactNumber, &Mn.Email, &Mn.roleId)
+
+	Log("ManagersFind", finErr)
 	return finErr
 }
 
@@ -634,7 +708,7 @@ func (Mn *Managers) Create() error {
 		return finErr
 	}
 
-	res, finErr := MnCreate.Exec(Mn.Name, Mn.ContactNumber, Mn.Email, Mn.roleId)
+	res, finErr := MnCreate.Exec(Mn.Login, Mn.Password, Mn.Name, Mn.ContactNumber, Mn.Email, Mn.roleId)
 
 	Log("ManagersCreate", finErr)
 
@@ -650,8 +724,12 @@ func (Mn *Managers) Delete() error {
 	res, finErr := MnDelete.Exec(Mn.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
@@ -669,11 +747,15 @@ func (Mn *Managers) Update() error {
 		return finErr
 	}
 
-	res, finErr := MnUpdate.Exec(Mn.Name, Mn.ContactNumber, Mn.Email, Mn.roleId, Mn.Id)
+	res, finErr := MnUpdate.Exec(Mn.Login, Mn.Password, Mn.Name, Mn.ContactNumber, Mn.Email, Mn.roleId, Mn.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 	Log("ManagersUpdate", finErr)
@@ -698,6 +780,9 @@ func (Ac *Actions) CheckData() (bool, error) {
 	var IsCorrect bool
 	var err error
 
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
 	IsCorrect = true
 	err = nil
 
@@ -740,13 +825,114 @@ func (Ac *Actions) Cancel() error {
 	res, finErr := AcCancel.Exec(Ac.Id)
 
 	if finErr == nil {
-		if res == nil {
-			finErr = errors.New("there are no affected rows")
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
 		}
 	}
 
 	Log("ActionsCancel", finErr)
 	*Ac = *NewAction()
+
+	return finErr
+}
+
+//-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
+
+func NewSession() *Sessions {
+	return new(Sessions)
+}
+
+func (Sn *Sessions) CheckData() (bool, error) {
+	var IsCorrect bool
+	var err error
+
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	// ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ / ЗАГЛУШКА / ДОПИСАТЬ /
+	IsCorrect = true
+	err = nil
+
+	return IsCorrect, err
+}
+
+func (Sn *Sessions) Get() error {
+	res := SnGet.QueryRow(Sn.Token)
+
+	finErr := res.Scan(&Sn.IdNum, &Sn.Id, &Sn.Token, &Sn.managerId)
+
+	Log("SessionsGet", finErr)
+	return finErr
+}
+
+func (Sn *Sessions) Create() error {
+	IsCorrect, finErr := Sn.CheckData()
+
+	if !IsCorrect {
+		Log("SessionsCreate", finErr)
+		return finErr
+	}
+
+	_, finErr = SnCreate.Exec(Sn.Token, Sn.managerId)
+
+	Log("SessionsCreate", finErr)
+
+	if finErr == nil {
+		finErr = Sn.Get()
+	}
+
+	return finErr
+}
+
+func (Sn *Sessions) Delete() error {
+	res, finErr := SnDelete.Exec(Sn.Token)
+
+	if finErr == nil {
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
+		}
+	}
+
+	Log("SessionsDelete", finErr)
+	*Sn = *NewSession()
+
+	return finErr
+}
+
+func (Sn *Sessions) Update() error {
+	IsCorrect, finErr := Sn.CheckData()
+
+	if !IsCorrect {
+		Log("SessionsUpdate", finErr)
+		return finErr
+	}
+
+	res, finErr := SnUpdate.Exec(Sn.Token, Sn.managerId)
+
+	if finErr == nil {
+		ra, err := res.RowsAffected()
+		finErr = err
+		if ra == 0 {
+			if finErr == nil {
+				finErr = errors.New("CError: There are no affected rows")
+			}
+		}
+	}
+	Log("SessionsUpdate", finErr)
+
+	err := Sn.Get()
+	if finErr == nil {
+		finErr = err
+	}
 
 	return finErr
 }
