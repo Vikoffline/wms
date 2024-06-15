@@ -1,33 +1,26 @@
 package main
 
-import (
-	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-)
+// var jar, _ = cookiejar.New(nil)
+// var cl = http.Client{
+// 	Jar: jar,
+// }
 
-var cl = http.Client{}
+// func testAuth(w http.ResponseWriter, r *http.Request) {
+// 	query := r.URL.Query()
+// 	vals := url.Values{}
+// 	vals.Add("action", query.Get("Action"))
+// 	vals.Add("login", query.Get("Login"))
+// 	vals.Add("password", query.Get("Password"))
+// 	vals.Add("password2", query.Get("Password2"))
 
-func clAuth(action, login, password, password2 string) {
-	vals := url.Values{}
-	vals.Add("action", action)
-	vals.Add("login", login)
-	vals.Add("password", password)
-	vals.Add("password2", password2)
+// 	res, err := cl.PostForm("http://localhost:8080/auth", vals)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	res, err := cl.PostForm("http://localhost:8080/auth", vals)
-	if err != nil {
-		panic(err)
-	}
+// 	cks := res.Cookies()
+// 	fmt.Println("Client: ", cks)
+// 	body, _ := io.ReadAll(res.Body)
+// 	fmt.Println("Client: ", string(body))
 
-	cks := res.Cookies()
-	fmt.Println("Client: ", cks)
-	body, _ := io.ReadAll(res.Body)
-	fmt.Println("Client: ", string(body))
-
-}
-
-func testAuth(w http.ResponseWriter, r *http.Request) {
-	clAuth("Login", "root", "DevPassword", "")
-}
+// }

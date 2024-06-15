@@ -209,3 +209,6 @@ insert into Roles(Name) values ("empty");
 insert into Roles_Perms(roleId, permId) values ("Rl_1", "Pr_1");
 
 insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values ("root", "$2a$10$7z2Qu0bttRd2T3ea0Fzluu1Lp8iyU2sStJByuhYBQhE3hKENWe2Tm", "", "", "", "Rl_1");
+
+select * from Sessions;
+select * from Managers where IdNum = 1;

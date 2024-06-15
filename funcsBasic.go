@@ -2,12 +2,62 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 )
+
+var noAffectedRows = errors.New("CError: There are no affected rows")
+
+// TODO: Реворк ролей
+// TODO: Реворк ролей
+// TODO: Реворк ролей
 
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------
+
+func TableGetAll(tableName string) ([]map[string]any, error) {
+	tableName = strings.Replace(tableName, " ", "", -1)
+	query := "select * from " + tableName
+	fmt.Println(query)
+	rows, err := con.Query(query)
+	if err != nil {
+		Log(tableName+"GetAll", err)
+		return []map[string]any{}, err
+	}
+
+	columns, _ := rows.Columns()
+	values := make([]any, len(columns))
+	valuePtrs := make([]any, len(columns))
+
+	var res []map[string]any
+
+	for rows.Next() {
+		for i := range columns {
+			valuePtrs[i] = &values[i]
+		}
+
+		rows.Scan(valuePtrs...)
+
+		rowMap := make(map[string]any)
+		for i, col := range columns {
+			val := values[i]
+
+			switch val.(type) {
+			case []byte:
+				val = string(val.([]byte))
+			}
+
+			rowMap[col] = val
+		}
+
+		res = append(res, rowMap)
+	}
+
+	Log(tableName+"GetAll", err)
+	return res, err
+}
 
 func Log(funcName string, funcErr error) {
 	sErr := ""
@@ -82,7 +132,7 @@ func (In *Instances) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -108,7 +158,7 @@ func (In *Instances) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -164,7 +214,7 @@ func (In *Instances) UpdateInfo(iI *instancesInfo) (*instancesInfo, error) {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -259,7 +309,7 @@ func (iP *instanceParts) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -284,7 +334,7 @@ func (iP *instanceParts) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -356,7 +406,7 @@ func (It *Items) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -382,7 +432,7 @@ func (It *Items) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -455,7 +505,7 @@ func (Pr *Permissions) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -481,7 +531,7 @@ func (Pr *Permissions) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -553,7 +603,7 @@ func (Rl *Roles) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -579,7 +629,7 @@ func (Rl *Roles) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -642,7 +692,7 @@ func (Rl *Roles) DelPerms(permIds []string) ([]*Permissions, error) {
 		res, err := RlDelPerm.Exec(Rl.Id, PrId)
 		if err == nil {
 			if res == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 				break
 			}
 		} else {
@@ -728,7 +778,7 @@ func (Mn *Managers) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -754,7 +804,7 @@ func (Mn *Managers) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -829,7 +879,7 @@ func (Ac *Actions) Cancel() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -897,7 +947,7 @@ func (Sn *Sessions) Delete() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}
@@ -923,7 +973,7 @@ func (Sn *Sessions) Update() error {
 		finErr = err
 		if ra == 0 {
 			if finErr == nil {
-				finErr = errors.New("CError: There are no affected rows")
+				finErr = noAffectedRows
 			}
 		}
 	}

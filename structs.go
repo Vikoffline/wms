@@ -150,8 +150,9 @@ type Managers struct {
 }
 
 var MnGet, _ = con.Prepare("select * from Managers where IdNum = ?")
+var MnGetRoles, _ = con.Prepare("select R.* from Roles R inner join Roles_Perms RP on RP.roleId = R.Id inner join Manages M on M.Id = RP.managerId where M.Id = ?")
 var MnFind, _ = con.Prepare("select * from Managers where Login = ?")
-var MnCreate, _ = con.Prepare("insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values (?, ?, ?, ?);")
+var MnCreate, _ = con.Prepare("insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values (?, ?, ?, ?, ?, ?);")
 var MnUpdate, _ = con.Prepare("update Managers set Login = ?, Password = ?, Name = ?, ContactNumber = ?, Email = ?, roleId = ? where Id = ?;")
 var MnDelete, _ = con.Prepare("delete from Managers where Id = ?;")
 
