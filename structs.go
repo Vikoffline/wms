@@ -18,7 +18,7 @@ type Instances struct {
 	IsAvailable bool
 }
 
-var InGet, _ = con.Prepare("select * from Instances where IdNum = ?")
+var InGet, _ = con.Prepare("select * from Instances where IdNum = ? or Id = ?")
 var InGetParts, _ = con.Prepare("select * from instanceParts where instanceId = ?")
 var InCreate, _ = con.Prepare("insert into Instances(Type, Coordinates, Capacity, IsAvailable) values (?, ?, ?, ?);")
 var InUpdate, _ = con.Prepare("update Instances set Type = ?, Coordinates = ?, Capacity = ?, IsAvailable = ? where Id = ?;")
@@ -42,7 +42,7 @@ type instancesInfo struct {
 	Adress        string
 }
 
-var iIGet, _ = con.Prepare("select * from instancesInfo where instanceId = ?")
+var iIGet, _ = con.Prepare("select * from instancesInfo where IdNum = ? or instanceId = ?")
 var iIUpdate, _ = con.Prepare("update instancesInfo set ContactNumber = ?, Email = ?, WorkingHours = ?, Length = ?, Width = ?, Height = ?, Volume = ?, City = ?, Adress = ? where instanceId = ?;")
 
 // var iIDelete, _ = con.Prepare("delete from instancesInfo where instanceId = ?);")
@@ -61,7 +61,7 @@ type instanceParts struct {
 	instanceId  string
 }
 
-var iPGet, _ = con.Prepare("select * from instanceParts where IdNum = ?")
+var iPGet, _ = con.Prepare("select * from instanceParts where IdNum = ? or Id = ?")
 var iPCreate, _ = con.Prepare("insert into instanceParts(Type, itemMaxSize, Capacity, instanceId) values (?, ?, ?, ?);")
 var iPUpdate, _ = con.Prepare("update instanceParts set Type = ?, itemMaxSize = ?, Capacity = ?, instanceId = ? where Id = ?;")
 var iPDelete, _ = con.Prepare("delete from instanceParts where Id = ?;")
@@ -78,7 +78,7 @@ type Items struct {
 	Name     string
 }
 
-var ItGet, _ = con.Prepare("select * from Items where IdNum = ?")
+var ItGet, _ = con.Prepare("select * from Items where IdNum = ? or Id = ?")
 var ItCreate, _ = con.Prepare("insert into Items(Size, VendorId, Name) values (?, ?, ?);")
 var ItUpdate, _ = con.Prepare("update Items set Size = ?, VendorId = ?, Name = ? where Id = ?;")
 var ItDelete, _ = con.Prepare("delete from Items where Id = ?;")
@@ -95,7 +95,7 @@ type Permissions struct {
 	tableName string
 }
 
-var PrGet, _ = con.Prepare("select * from Permissions where IdNum = ?")
+var PrGet, _ = con.Prepare("select * from Permissions where IdNum = ? or Id = ?")
 var PrCreate, _ = con.Prepare("insert into Permissions(Code, Name, tableName) values (?, ?, ?);")
 var PrUpdate, _ = con.Prepare("update Permissions set Code = ?, Name = ?, tableName = ? where Id = ?;")
 var PrDelete, _ = con.Prepare("delete from Permissions where Id = ?;")
@@ -110,7 +110,7 @@ type Roles struct {
 	Name  string
 }
 
-var RlGet, _ = con.Prepare("select * from Roles where IdNum = ?")
+var RlGet, _ = con.Prepare("select * from Roles where IdNum = ? or Id = ?")
 var RlGetPerms, _ = con.Prepare("select * from Roles_Perms where roleId = ?")
 var RlCreate, _ = con.Prepare("insert into Roles(Name) values (?);")
 var RlUpdate, _ = con.Prepare("update Roles set Name = ? where Id = ?;")
@@ -129,7 +129,7 @@ type Roles_Perms struct {
 	permId string
 }
 
-var RPGet, _ = con.Prepare("select * from Roles_Perms where IdNum = ?")
+var RPGet, _ = con.Prepare("select * from Roles_Perms where IdNum = ? or Id = ?")
 var RPCreate, _ = con.Prepare("insert into Roles_Perms(roleId, permId) values (?, ?);")
 var RPUpdate, _ = con.Prepare("update Roles_Perms set roleId = ?, permId = ? where Id = ?;")
 var RPDelete, _ = con.Prepare("delete from Roles_Perms where Id = ?;")
@@ -149,7 +149,7 @@ type Managers struct {
 	roleId        string
 }
 
-var MnGet, _ = con.Prepare("select * from Managers where IdNum = ?")
+var MnGet, _ = con.Prepare("select * from Managers where IdNum = ? or Id = ?")
 var MnGetRoles, _ = con.Prepare("select R.* from Roles R inner join Roles_Perms RP on RP.roleId = R.Id inner join Manages M on M.Id = RP.managerId where M.Id = ?")
 var MnFind, _ = con.Prepare("select * from Managers where Login = ?")
 var MnCreate, _ = con.Prepare("insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values (?, ?, ?, ?, ?, ?);")
@@ -170,7 +170,7 @@ type Actions struct {
 	managerId string
 }
 
-var AcGet, _ = con.Prepare("select * from Actions where IdNum = ?")
+var AcGet, _ = con.Prepare("select * from Actions where IdNum = ? or Id = ?")
 var AcDo, _ = con.Prepare("insert into Actions(Type, Date, itemId, instId, managerId) values (?, ?, ?, ?, ?);")
 var AcCancel, _ = con.Prepare("delete from Actions where Id = ?;")
 var AcUpdate, _ = con.Prepare("update Actions set Type = ?, Date = ?, itemId = ?, instId = ?, managerId = ? where Id = ?;")

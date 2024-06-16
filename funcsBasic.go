@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -17,10 +20,72 @@ var noAffectedRows = errors.New("CError: There are no affected rows")
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------
 
-func TableGetAll(tableName string) ([]map[string]any, error) {
+func convertStringToType(str string, t reflect.Type) (reflect.Value, error) {
+	switch t.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		val, err := strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(val).Convert(t), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		val, err := strconv.ParseUint(str, 10, 64)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(val).Convert(t), nil
+	case reflect.Float32, reflect.Float64:
+		val, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(val).Convert(t), nil
+	case reflect.Bool:
+		val, err := strconv.ParseBool(str)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		return reflect.ValueOf(val).Convert(t), nil
+	case reflect.String:
+		return reflect.ValueOf(str).Convert(t), nil
+	default:
+		return reflect.Value{}, fmt.Errorf("unsupported type: %s", t.Kind())
+	}
+}
+
+func fillStruct(s any, data []string) (err error) {
+	v := reflect.ValueOf(s).Elem() // Получаем отраженное значение
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		if i < len(data) && field.CanSet() {
+			value := reflect.ValueOf(data[i])
+			if value.String() != "" {
+				value, err = convertStringToType(value.String(), field.Type())
+				field.Set(value)
+			}
+		}
+	}
+	return err
+}
+
+//-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
+
+func tableGet(tableName, start, limit string) ([]map[string]any, error) {
 	tableName = strings.Replace(tableName, " ", "", -1)
-	query := "select * from " + tableName
-	fmt.Println(query)
+	start = strings.Replace(start, " ", "", -1)
+	limit = strings.Replace(limit, " ", "", -1)
+
+	if start == "" {
+		start = "1"
+	}
+
+	if limit == "" {
+		limit = "20"
+	}
+
+	query := "select * from " + tableName + " where IdNum >= " + start + " order by IdNum desc limit " + limit
 	rows, err := con.Query(query)
 	if err != nil {
 		Log(tableName+"GetAll", err)
@@ -59,6 +124,19 @@ func TableGetAll(tableName string) ([]map[string]any, error) {
 	return res, err
 }
 
+func tableGetColumns(tableName string) ([]string, error) {
+	tableName = strings.Replace(tableName, " ", "", -1)
+	query := "select * from " + tableName + " limit 1"
+	rows, err := con.Query(query)
+	cols, _ := rows.Columns()
+	if err != nil {
+		Log(tableName+"GetAllColumns", err)
+		return []string{}, err
+	}
+
+	return cols, err
+}
+
 func Log(funcName string, funcErr error) {
 	sErr := ""
 	if funcErr == nil {
@@ -95,8 +173,14 @@ func (In *Instances) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (In *Instances) Get(IdNum int64) error {
-	res := InGet.QueryRow(IdNum)
+func (In *Instances) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = InGet.QueryRow(Id, "")
+	case string:
+		res = InGet.QueryRow(0, Id)
+	}
 
 	finErr := res.Scan(&In.IdNum, &In.Id, &In.Type, &In.Coordinates, &In.Capacity, &In.IsAvailable)
 
@@ -164,7 +248,7 @@ func (In *Instances) Update() error {
 	}
 	Log("InstancesUpdate", finErr)
 
-	err := In.Get(In.IdNum)
+	err := In.Get(In.Id)
 	if finErr == nil {
 		finErr = err
 	}
@@ -191,23 +275,29 @@ func (iI *instancesInfo) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (In *Instances) GetInfo() (*instancesInfo, error) {
-	res := iIGet.QueryRow(In.Id)
-	iI := NewInstanceInfo()
-	finErr := res.Scan(&iI.IdNum, &iI.instanceId, &iI.ContactNumber, &iI.Email, &iI.WorkingHours, &iI.Length, &iI.Width, &iI.Height, &iI.Volume, &iI.City, &iI.Adress)
-	Log("InstancesGetInfo", finErr)
-	return iI, finErr
-}
-
-func (In *Instances) UpdateInfo(iI *instancesInfo) (*instancesInfo, error) {
-	IsCorrect, finErr := In.CheckData()
-
-	if !IsCorrect {
-		Log("InstancesUpdateInfo", finErr)
-		return iI, finErr
+func (iI *instancesInfo) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = iIGet.QueryRow(Id, "")
+	case string:
+		res = iIGet.QueryRow(0, Id)
 	}
 
-	res, finErr := iIUpdate.Exec(iI.ContactNumber, iI.Email, iI.WorkingHours, iI.Length, iI.Width, iI.Height, iI.Volume, iI.City, iI.Adress, In.Id)
+	finErr := res.Scan(&iI.IdNum, &iI.instanceId, &iI.ContactNumber, &iI.Email, &iI.WorkingHours, &iI.Length, &iI.Width, &iI.Height, &iI.Volume, &iI.City, &iI.Adress)
+	Log("instancesInfoGet", finErr)
+	return finErr
+}
+
+func (iI *instancesInfo) Update() error {
+	IsCorrect, finErr := iI.CheckData()
+
+	if !IsCorrect {
+		Log("instancesInfoUpdate", finErr)
+		return finErr
+	}
+
+	res, finErr := iIUpdate.Exec(iI.ContactNumber, iI.Email, iI.WorkingHours, iI.Length, iI.Width, iI.Height, iI.Volume, iI.City, iI.Adress, iI.instanceId)
 
 	if finErr == nil {
 		ra, err := res.RowsAffected()
@@ -218,14 +308,14 @@ func (In *Instances) UpdateInfo(iI *instancesInfo) (*instancesInfo, error) {
 			}
 		}
 	}
-	Log("InstancesUpdateInfo", finErr)
+	Log("instancesInfoUpdate", finErr)
 
-	iI, err := In.GetInfo()
+	err := iI.Get(iI.instanceId)
 	if finErr == nil {
 		finErr = err
 	}
 
-	return iI, finErr
+	return finErr
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -265,7 +355,7 @@ func (In *Instances) AddPart(iP *instanceParts) error {
 
 	if finErr == nil {
 		iP.IdNum, _ = res.LastInsertId()
-		finErr = iP.Get(iP.IdNum)
+		finErr = iP.Get(iP.Id)
 	}
 
 	return finErr
@@ -292,12 +382,38 @@ func (iP *instanceParts) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (iP *instanceParts) Get(IdNum int64) error {
-	res := iPGet.QueryRow(iP.IdNum)
+func (iP *instanceParts) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = iPGet.QueryRow(Id, "")
+	case string:
+		res = iPGet.QueryRow(0, Id)
+	}
 
 	finErr := res.Scan(&iP.IdNum, &iP.Id, &iP.Type, &iP.itemMaxSize, &iP.Capacity, &iP.instanceId)
 
 	Log("instancePartsGet", finErr)
+	return finErr
+}
+
+func (iP *instanceParts) Create() error {
+	IsCorrect, finErr := iP.CheckData()
+
+	if !IsCorrect {
+		Log("instancePartsCreate", finErr)
+		return finErr
+	}
+
+	res, finErr := iPCreate.Exec(iP.Type, iP.itemMaxSize, iP.Capacity, iP.instanceId, iP.Id)
+
+	Log("InstancesCreate", finErr)
+
+	if finErr == nil {
+		iP.IdNum, _ = res.LastInsertId()
+		finErr = iP.Get(iP.IdNum)
+	}
+
 	return finErr
 }
 
@@ -340,7 +456,7 @@ func (iP *instanceParts) Update() error {
 	}
 	Log("instancePartsUpdate", finErr)
 
-	err := iP.Get(iP.IdNum)
+	err := iP.Get(iP.Id)
 	if finErr == nil {
 		finErr = err
 	}
@@ -369,8 +485,14 @@ func (It *Items) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (It *Items) Get(IdNum int64) error {
-	res := ItGet.QueryRow(It.IdNum)
+func (It *Items) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = ItGet.QueryRow(Id, "")
+	case string:
+		res = ItGet.QueryRow(0, Id)
+	}
 
 	finErr := res.Scan(&It.IdNum, &It.Id, &It.Size, &It.vendorId, &It.Name)
 
@@ -438,7 +560,7 @@ func (It *Items) Update() error {
 	}
 	Log("ItemsUpdate", finErr)
 
-	err := It.Get(It.IdNum)
+	err := It.Get(It.Id)
 	if finErr == nil {
 		finErr = err
 	}
@@ -467,8 +589,14 @@ func (Pr *Permissions) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (Pr *Permissions) Get(IdNum int64) error {
-	res := PrGet.QueryRow(Pr.IdNum)
+func (Pr *Permissions) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = PrGet.QueryRow(Id, "")
+	case string:
+		res = PrGet.QueryRow(0, Id)
+	}
 
 	finErr := res.Scan(&Pr.IdNum, &Pr.Id, &Pr.Code, &Pr.Name, &Pr.tableName)
 
@@ -523,7 +651,6 @@ func (Pr *Permissions) Update() error {
 		Log("PermissionsUpdate", finErr)
 		return finErr
 	}
-
 	res, finErr := PrUpdate.Exec(Pr.Code, Pr.Name, Pr.tableName, Pr.Id)
 
 	if finErr == nil {
@@ -537,7 +664,7 @@ func (Pr *Permissions) Update() error {
 	}
 	Log("PermissionsUpdate", finErr)
 
-	err := Pr.Get(Pr.IdNum)
+	err := Pr.Get(Pr.Id)
 	if finErr == nil {
 		finErr = err
 	}
@@ -566,8 +693,14 @@ func (Rl *Roles) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (Rl *Roles) Get(IdNum int64) error {
-	res := RlGet.QueryRow(Rl.IdNum)
+func (Rl *Roles) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = RlGet.QueryRow(Id, "")
+	case string:
+		res = RlGet.QueryRow(0, Id)
+	}
 
 	finErr := res.Scan(&Rl.IdNum, &Rl.Id, &Rl.Name)
 
@@ -635,7 +768,7 @@ func (Rl *Roles) Update() error {
 	}
 	Log("RolesUpdate", finErr)
 
-	err := Rl.Get(Rl.IdNum)
+	err := Rl.Get(Rl.Id)
 	if finErr == nil {
 		finErr = err
 	}
@@ -716,7 +849,7 @@ func (Rl *Roles) DelPerms(permIds []string) ([]*Permissions, error) {
 //-----------------------------------------------------------------------------------------------------
 
 func NewManager() *Managers {
-	return new(Managers)
+	return &Managers{Id: "Mn_Null", roleId: "Rl_2"}
 }
 
 func (Mn *Managers) CheckData() (bool, error) {
@@ -732,8 +865,14 @@ func (Mn *Managers) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (Mn *Managers) Get(IdNum int64) error {
-	res := MnGet.QueryRow(Mn.IdNum)
+func (Mn *Managers) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = MnGet.QueryRow(Id, "")
+	case string:
+		res = MnGet.QueryRow(0, Id)
+	}
 
 	finErr := res.Scan(&Mn.IdNum, &Mn.Id, &Mn.Login, &Mn.Password, &Mn.Name, &Mn.ContactNumber, &Mn.Email, &Mn.roleId)
 
@@ -810,7 +949,7 @@ func (Mn *Managers) Update() error {
 	}
 	Log("ManagersUpdate", finErr)
 
-	err := Mn.Get(Mn.IdNum)
+	err := Mn.Get(Mn.Id)
 	if finErr == nil {
 		finErr = err
 	}
@@ -839,8 +978,14 @@ func (Ac *Actions) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (Ac *Actions) Get(IdNum int64) error {
-	res := AcGet.QueryRow(Ac.IdNum)
+func (Ac *Actions) Get(Id any) error {
+	var res *sql.Row
+	switch Id.(type) {
+	case int64:
+		res = AcGet.QueryRow(Id, "")
+	case string:
+		res = AcGet.QueryRow(0, Id)
+	}
 
 	date := ""
 	finErr := res.Scan(&Ac.IdNum, &Ac.Id, &Ac.Type, &date, &Ac.itemId, &Ac.instId, &Ac.managerId)
@@ -966,7 +1111,7 @@ func (Sn *Sessions) Update() error {
 		return finErr
 	}
 
-	res, finErr := SnUpdate.Exec(Sn.Token, Sn.managerId)
+	res, finErr := SnUpdate.Exec(Sn.managerId, Sn.Token)
 
 	if finErr == nil {
 		ra, err := res.RowsAffected()

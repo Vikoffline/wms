@@ -2,81 +2,74 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
-	"net/url"
 	"time"
 )
 
 func Auth(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost || r.URL.Query().Has("action") {
-		var data url.Values
-		var token string
-		var err error
+	var token string
+	var err error
 
-		switch r.URL.Path {
-		case "/FormAuth":
-			data = r.Form
-		case "/QueryAuth":
-			data = r.URL.Query()
+	data := chooseData(w, r, "action")
+	if data == nil {
+		return
+	}
+
+	action := data.Get("action")
+	if action == "SignOut" {
+		cke := http.Cookie{
+			Name:    "wms_manager_token",
+			Value:   "",
+			Expires: time.Unix(0, 0),
 		}
+		http.SetCookie(w, &cke)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 
-		action := data.Get("action")
-		if action == "SignOut" {
-			cke := http.Cookie{
-				Name:    "wms_manager_token",
-				Value:   "",
-				Expires: time.Unix(0, 0),
-			}
-			http.SetCookie(w, &cke)
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+	if _, err := r.Cookie("wms_manager_token"); err == nil {
+		w.WriteHeader(200)
+		return
+	}
 
-		if token, err := r.Cookie("wms_manager_token"); err == nil {
-			fmt.Println(token, err)
+	login := data.Get("login")
+	password := data.Get("password")
+	password2 := data.Get("password2")
 
-			return
-		}
-
-		login := data.Get("login")
-		password := data.Get("password")
-		password2 := data.Get("password2")
-
-		switch action {
-		case "SignIn":
-			token, err = userSignIn(login, password)
-		case "SignUp":
-			token, err = userSignUp(login, password, password2)
-		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-
-		if err != nil {
-			fmt.Println(err)
-			switch token {
-			case "Forbidden":
-				w.WriteHeader(http.StatusForbidden)
-			case "InnerError":
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			return
-		} else {
-			fmt.Println(token)
-			cke := http.Cookie{
-				Name:  "wms_manager_token",
-				Value: token,
-			}
-			http.SetCookie(w, &cke)
-		}
-	} else {
+	switch action {
+	case "SignIn":
+		token, err = userSignIn(login, password)
+	case "SignUp":
+		token, err = userSignUp(login, password, password2)
+	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+
+	if err != nil {
+		switch token {
+		case "Forbidden":
+			w.WriteHeader(http.StatusForbidden)
+		case "InnerError":
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	} else {
+		cke := http.Cookie{
+			Name:  "wms_manager_token",
+			Value: token,
+		}
+		http.SetCookie(w, &cke)
 	}
 }
 
 func GetAll(w http.ResponseWriter, r *http.Request) {
-	tableName := r.URL.Query().Get("tableName")
-	anymap, err := TableGetAll(tableName)
+	data := chooseData(w, r, "table")
+	if data == nil {
+		return
+	}
+
+	anymap, err := tableGet(data.Get("table"), data.Get("start"), data.Get("limit"))
 
 	if err != nil {
 		w.Write([]byte(err.Error()))
@@ -92,11 +85,122 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func Update(w http.ResponseWriter, r *http.Request) {
+	data := chooseData(w, r, "table")
+	if data == nil {
+		return
+	}
+
+	cols, err := tableGetColumns(data.Get("table"))
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	values := []string{}
+	for _, col := range cols {
+		values = append(values, data.Get(col))
+	}
+
+	switch data.Get("table") {
+	case "Instances":
+		Tbl := NewInstance()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	case "instancesInfo":
+		Tbl := NewInstanceInfo()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	case "instanceParts":
+		Tbl := NewInstancePart()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	case "Items":
+		Tbl := NewItem()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	case "Permissions":
+		Tbl := NewPermission()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	case "Roles":
+		Tbl := NewRole()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	case "Managers":
+		Tbl := NewManager()
+		fillStruct(Tbl, values)
+		err = Tbl.Update()
+	default:
+		err = errors.New("CError: No such table or the table is not available")
+	}
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+}
+
+func Create(w http.ResponseWriter, r *http.Request) {
+	data := chooseData(w, r, "table")
+	if data == nil {
+		return
+	}
+
+	cols, err := tableGetColumns(data.Get("table"))
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	values := []string{}
+	for _, col := range cols {
+		values = append(values, data.Get(col))
+	}
+
+	switch data.Get("table") {
+	case "Instances":
+		Tbl := NewInstance()
+		fillStruct(Tbl, values)
+		err = Tbl.Create()
+	case "instanceParts":
+		Tbl := NewInstancePart()
+		fillStruct(Tbl, values)
+		err = Tbl.Create()
+	case "Items":
+		Tbl := NewItem()
+		fillStruct(Tbl, values)
+		err = Tbl.Create()
+	case "Permissions":
+		Tbl := NewPermission()
+		fillStruct(Tbl, values)
+		err = Tbl.Create()
+	case "Roles":
+		Tbl := NewRole()
+		fillStruct(Tbl, values)
+		err = Tbl.Create()
+	case "Managers":
+		Tbl := NewManager()
+		fillStruct(Tbl, values)
+		err = Tbl.Create()
+	default:
+		err = errors.New("CError: No such table or the table is not available")
+	}
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func Serve() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/FormAuth", Auth)
-	mux.HandleFunc("/QueryAuth", Auth)
+	mux.HandleFunc("/Auth", Auth)
 	mux.HandleFunc("/GetAll", GetAll)
+	mux.HandleFunc("/Update", Update)
+	mux.HandleFunc("/Create", Create)
 
 	server := &http.Server{
 		Addr:    ":8080",

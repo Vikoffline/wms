@@ -4,10 +4,27 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+func chooseData(w http.ResponseWriter, r *http.Request, reqAttr string) url.Values {
+	var data url.Values
+
+	if r.Method == http.MethodPost {
+		data = r.Form
+	} else if r.URL.Query().Has(reqAttr) {
+		data = r.URL.Query()
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return nil
+	}
+
+	return data
+}
 
 func userSignIn(login, password string) (string, error) {
 	var err error
