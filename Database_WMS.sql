@@ -89,7 +89,7 @@ create table Actions (
     Date datetime default(current_date()), 
     itemId varchar(16),
     instId varchar(16),
-    managerId varchar(16),
+    managerId varchar(16), -- УБрать атрибут
     foreign key (itemId) references Items(Id) on delete cascade,
     foreign key (instId) references Instances(Id) on delete cascade,
     foreign key (managerId) references Managers(Id) on delete set null
@@ -200,6 +200,10 @@ end//
 
 delimiter ;
 
+drop user if exists site;
+create user site identified by "DevPassword";
+grant all on wms.* to site; 
+
 insert into Permissions(Code, Name, tableName) values
 (0, "AllRights", "AllTables");
 
@@ -210,5 +214,6 @@ insert into Roles_Perms(roleId, permId) values ("Rl_1", "Pr_1");
 
 insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values ("root", "$2a$10$7z2Qu0bttRd2T3ea0Fzluu1Lp8iyU2sStJByuhYBQhE3hKENWe2Tm", "", "", "", "Rl_1");
 
-select * from Roles;
+select * from Permissions;
 select * from Logging where IdNum >= 1 order by IdNum desc limit 20;
+update Permissions set Code = 24, Name = "Test", tableName = "" where Id = "Pr_2";
