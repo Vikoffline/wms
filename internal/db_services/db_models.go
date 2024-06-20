@@ -190,6 +190,7 @@ var SnGet, _ = con.Prepare("select * from Sessions where Token = ?")
 var SnCreate, _ = con.Prepare("insert into Sessions(Token, managerId) values (?, ?);")
 var SnUpdate, _ = con.Prepare("update Sessions set managerId = ? where Token = ?;")
 var SnDelete, _ = con.Prepare("delete from Sessions where Token = ?;")
+var SnCheckRights, _ = con.Prepare(`select Sn.Id from Sessions Sn inner join Managers Mn on Mn.Id = Sn.managerId inner join Roles Rl on Rl.Id = Mn.roleId inner join Roles_Perms RP on RP.roleId = Rl.Id inner join Permissions Pr on Pr.Id = RP.permId where Sn.Token = ? and ((Pr.Name = "AllRights") or (Pr.Name = ?)) and ((Pr.tableName = "AllTables") or (Pr.tableName = ?))`)
 
 //-----------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------

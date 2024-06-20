@@ -10,3 +10,5 @@ var ErrUserCreation = "Error on user creation"
 var ErrSesKeyGen = "Error on session key generation"
 var ErrSesCreation = "Error on session creation"
 var ErrPasEncryption = "Error on password encryption"
+
+var ErrEmptyField = "Some of required fields are empty"

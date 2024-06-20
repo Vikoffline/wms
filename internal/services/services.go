@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"slices"
 	"time"
 
 	db_services "wms/internal/db_services"
@@ -87,58 +88,66 @@ func GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Update(w http.ResponseWriter, r *http.Request) {
-	data := chooseData(w, r, "table")
+// func Update(w http.ResponseWriter, r *http.Request) {
+// 	data := chooseData(w, r, "table")
+// 	if data == nil {
+// 		return
+// 	}
+
+// 	cols, err := db_services.TableGetColumns(data.Get("table"))
+// 	if err != nil {
+// 		w.Write([]byte(err.Error()))
+// 		return
+// 	}
+
+// 	values := []string{}
+// 	for _, col := range cols {
+// 		values = append(values, data.Get(col))
+// 	}
+
+// 	var Tbl interface {
+// 		Update() error
+// 	}
+
+// 	switch data.Get("table") {
+// 	case "Instances":
+// 		Tbl = db_services.NewInstance()
+// 	case "instancesInfo":
+// 		Tbl = db_services.NewInstanceInfo()
+// 	case "instanceParts":
+// 		Tbl = db_services.NewInstancePart()
+// 	case "Items":
+// 		Tbl = db_services.NewItem()
+// 	case "Permissions":
+// 		Tbl = db_services.NewPermission()
+// 	case "Roles":
+// 		Tbl = db_services.NewRole()
+// 	case "Managers":
+// 		Tbl = db_services.NewManager()
+// 	default:
+// 		err = errors.New("CError: No such table or the table is not available")
+// 	}
+
+// 	db_services.FillStruct(Tbl, values)
+// 	err = Tbl.Update()
+
+// 	if err != nil {
+// 		w.Write([]byte(err.Error()))
+// 		return
+// 	}
+// }
+
+func Entity(w http.ResponseWriter, r *http.Request) {
+	var err error
+	data := CheckRights(r, w)
 	if data == nil {
 		return
 	}
+	act := data.Get("action")
 
-	cols, err := db_services.TableGetColumns(data.Get("table"))
-	if err != nil {
+	if act == "" {
+		err = errors.New("CError: Action-field is empty")
 		w.Write([]byte(err.Error()))
-		return
-	}
-
-	values := []string{}
-	for _, col := range cols {
-		values = append(values, data.Get(col))
-	}
-
-	var Tbl interface {
-		Update() error
-	}
-
-	switch data.Get("table") {
-	case "Instances":
-		Tbl = db_services.NewInstance()
-	case "instancesInfo":
-		Tbl = db_services.NewInstanceInfo()
-	case "instanceParts":
-		Tbl = db_services.NewInstancePart()
-	case "Items":
-		Tbl = db_services.NewItem()
-	case "Permissions":
-		Tbl = db_services.NewPermission()
-	case "Roles":
-		Tbl = db_services.NewRole()
-	case "Managers":
-		Tbl = db_services.NewManager()
-	default:
-		err = errors.New("CError: No such table or the table is not available")
-	}
-
-	db_services.FillStruct(Tbl, values)
-	err = Tbl.Update()
-
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-}
-
-func Create(w http.ResponseWriter, r *http.Request) {
-	data := chooseData(w, r, "table")
-	if data == nil {
 		return
 	}
 
@@ -155,13 +164,14 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	var Tbl interface {
 		Create() error
+		Update() error
+		Delete() error
+		Get(any) error
 	}
 
 	switch data.Get("table") {
 	case "Instances":
 		Tbl = db_services.NewInstance()
-	case "instancesInfo":
-		err = errors.New("CError: No such table or the table is not available")
 	case "instanceParts":
 		Tbl = db_services.NewInstancePart()
 	case "Items":
@@ -172,6 +182,11 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		Tbl = db_services.NewRole()
 	case "Managers":
 		Tbl = db_services.NewManager()
+	case "instancesInfo":
+		Tbl = db_services.NewInstanceInfo()
+		if slices.Contains([]string{"create", "delete"}, act) {
+			err = errors.New("CError: No such table or the table is not available")
+		}
 	default:
 		err = errors.New("CError: No such table or the table is not available")
 	}
@@ -182,20 +197,31 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db_services.FillStruct(Tbl, values)
-	err = Tbl.Create()
+	switch act {
+	case "create":
+		err = Tbl.Create()
+	case "update":
+		err = Tbl.Update()
+	case "get":
+		err = Tbl.Get(data.Get("id"))
+	case "delete":
+		err = Tbl.Get(data.Get("id"))
+	}
 
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return
 	}
+
+	js, _ := json.MarshalIndent(Tbl, "", "   ")
+	w.Write(js)
 }
 
 func Serve() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/Auth", Auth)
 	mux.HandleFunc("/GetAll", GetAll)
-	mux.HandleFunc("/Update", Update)
-	mux.HandleFunc("/Create", Create)
+	mux.HandleFunc("/Entity", Entity)
 
 	server := &http.Server{
 		Addr:    ":8080",

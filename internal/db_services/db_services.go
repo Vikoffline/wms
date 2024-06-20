@@ -295,6 +295,13 @@ func (iI *instancesInfo) Get(Id any) error {
 	return finErr
 }
 
+func (iI *instancesInfo) Create() error {
+	return nil
+}
+func (iI *instancesInfo) Delete() error {
+	return nil
+}
+
 func (iI *instancesInfo) Update() error {
 	IsCorrect, finErr := iI.CheckData()
 
@@ -1062,8 +1069,8 @@ func (Sn *Sessions) CheckData() (bool, error) {
 	return IsCorrect, err
 }
 
-func (Sn *Sessions) Get() error {
-	res := SnGet.QueryRow(Sn.Token)
+func (Sn *Sessions) Get(token string) error {
+	res := SnGet.QueryRow(token)
 
 	finErr := res.Scan(&Sn.IdNum, &Sn.Id, &Sn.Token, &Sn.ManagerId)
 
@@ -1084,7 +1091,7 @@ func (Sn *Sessions) Create() error {
 	Log("SessionsCreate", finErr)
 
 	if finErr == nil {
-		finErr = Sn.Get()
+		finErr = Sn.Get(Sn.Token)
 	}
 
 	return finErr
@@ -1130,7 +1137,7 @@ func (Sn *Sessions) Update() error {
 	}
 	Log("SessionsUpdate", finErr)
 
-	err := Sn.Get()
+	err := Sn.Get(Sn.Token)
 	if finErr == nil {
 		finErr = err
 	}

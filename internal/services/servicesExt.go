@@ -106,3 +106,32 @@ func userSignUp(login, password, password2 string) (string, error) {
 
 	return Sn.Token, nil
 }
+
+func CheckRights(r *http.Request, w http.ResponseWriter) (data url.Values) {
+	cke, err := r.Cookie("wms_manager_token")
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return nil
+	}
+
+	if data = chooseData(w, r, "table"); data == nil {
+		return
+	}
+
+	action := strings.Replace(data.Get("action"), " ", "", -1)
+	tableName := strings.Replace(data.Get("table"), " ", "", -1)
+	if action == "" || tableName == "" {
+		return nil
+	}
+
+	res := db_services.SnCheckRights.QueryRow(cke.Value, action, tableName)
+
+	err = res.Scan(&action)
+
+	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
+		return nil
+	}
+
+	return data
+}

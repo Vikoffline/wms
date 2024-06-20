@@ -205,15 +205,23 @@ create user site identified by "DevPassword";
 grant all on wms.* to site; 
 
 insert into Permissions(Code, Name, tableName) values
-(0, "AllRights", "AllTables");
+(0, "AllRights", "AllTables"),
+(1, "get", "Managers");
+
 
 insert into Roles(Name) values ("root");
 insert into Roles(Name) values ("empty");
+insert into Roles(Name) values ("test");
 
 insert into Roles_Perms(roleId, permId) values ("Rl_1", "Pr_1");
+insert into Roles_Perms(roleId, permId) values ("Rl_3", "Pr_2");
 
 insert into Managers(Login, Password, Name, ContactNumber, Email, roleId) values ("root", "$2a$10$7z2Qu0bttRd2T3ea0Fzluu1Lp8iyU2sStJByuhYBQhE3hKENWe2Tm", "", "", "", "Rl_1");
 
-select * from Permissions;
+select * from Managers;
 select * from Logging where IdNum >= 1 order by IdNum desc limit 20;
-update Permissions set Code = 24, Name = "Test", tableName = "" where Id = "Pr_2";
+
+
+select Sn.Id from Sessions Sn inner join Managers Mn on Mn.Id = Sn.managerId inner join Roles Rl on Rl.Id = Mn.roleId inner join Roles_Perms RP on RP.roleId = Rl.Id inner join Permissions Pr on Pr.Id = RP.permId where Sn.Token = "xmHI9fjaLI8TGfCsCia-zr-bpPF3xSkop13GyJ5SVig=" and ((Pr.Name = "AllRights") or (Pr.Name = "get")) and ((Pr.tableName = "AllTables") or (Pr.tableName = "Managers"));
+
+update Managers set roleId = "Rl_3" where Id = "Mn_2";
